@@ -1,0 +1,2 @@
+from wellbeing_activities.infraestructure.persistence.django.models import WellbeingActivityModel
+
