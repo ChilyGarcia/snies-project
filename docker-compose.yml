@@ -1,0 +1,61 @@
+services:
+  db:
+    image: postgres:16
+    container_name: snies_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-snies_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-admin}
+    ports:
+      - "${DB_PORT_EXPOSE:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-snies_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: ./snies-backend
+    container_name: snies_backend
+    restart: unless-stopped
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${DB_NAME:-snies_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-admin}
+      DEBUG: ${DEBUG:-True}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-*}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${DJANGO_PORT_EXPOSE:-8000}:8000"
+    volumes:
+      - ./snies-backend:/app
+
+  frontend:
+    build:
+      context: ./snies-frontend
+    container_name: snies_frontend
+    restart: unless-stopped
+    environment:
+      # OJO: este valor lo usa el navegador, por eso debe ser accesible desde tu host
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT_EXPOSE:-3000}:3000"
+    volumes:
+      - ./snies-frontend:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  postgres_data:
+
