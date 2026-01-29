@@ -15,7 +15,7 @@ function DrawerClose({ ...props }: React.ComponentProps<typeof DrawerPrimitive.C
     return <DrawerPrimitive.Close data-slot="drawer-close" {...props}/>;
 }
 function DrawerOverlay({ className, ...props }: React.ComponentProps<typeof DrawerPrimitive.Overlay>) {
-    return (<DrawerPrimitive.Overlay data-slot="drawer-overlay" className={cn('data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50', className)} {...props}/>);
+    return (<DrawerPrimitive.Overlay data-slot="drawer-overlay" className={cn('data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/35 backdrop-blur-md supports-backdrop-filter:bg-black/30', className)} {...props}/>);
 }
 function DrawerContent({ className, children, ...props }: React.ComponentProps<typeof DrawerPrimitive.Content>) {
     return (<DrawerPortal data-slot="drawer-portal">

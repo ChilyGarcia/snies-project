@@ -2,7 +2,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Bell, Home, Workflow, BarChart3, Settings, Users, User as UserIcon, LogOut, Settings as SettingsIcon, Shield } from "lucide-react";
+import { Search, Bell, Home, Workflow, BarChart3, Settings, Users, User as UserIcon, LogOut, Settings as SettingsIcon, Shield, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,6 +20,7 @@ const navigation = [
     { name: "Inicio", href: "/dashboard", icon: Home },
     { name: "Bienestar", href: "/wellbeing", icon: BarChart3 },
     { name: "Cursos", href: "/courses", icon: Workflow },
+    { name: "Actividades", href: "/software-activities", icon: ClipboardList },
     { name: "Usuarios", href: "/users", icon: Users },
     { name: "Ajustes", href: "/settings", icon: Settings },
     { name: "Auditorías", href: "/audit", icon: Shield },
@@ -314,6 +315,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 return can("courses", "view");
             if (item.href === "/wellbeing")
                 return can("wellbeing", "view");
+            if (item.href === "/software-activities")
+                return can("software_activities" as any, "view");
             if (item.href === "/audit")
                 return can("audit", "view");
             return true;
@@ -356,7 +359,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </aside>
 
-        <main className="flex-1 bg-muted/20">{children}</main>
+        <main className="relative flex-1 bg-linear-to-b from-background via-muted/25 to-background">
+          <div className="pointer-events-none absolute inset-0 -z-10">
+            <div className="absolute inset-0 opacity-[0.035] bg-[radial-gradient(#111_1px,transparent_1px)] bg-size-[18px_18px]" />
+            <div className="absolute -top-40 -right-48 h-112 w-md rounded-full bg-primary/8 blur-3xl" />
+            <div className="absolute -bottom-56 -left-56 h-136 w-136 rounded-full bg-primary/10 blur-3xl" />
+          </div>
+          {children}
+        </main>
       </div>
     </div>);
 }

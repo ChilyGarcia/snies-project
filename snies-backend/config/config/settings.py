@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "wellbeing_activities",
     "wellbeing_beneficiaries",
     "wellbeing_human_resources",
+    "software_activities",
 ]
 
 MIDDLEWARE = [

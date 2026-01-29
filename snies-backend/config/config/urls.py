@@ -8,7 +8,10 @@ urlpatterns = [
     path("api/roles/", include("users.presentation.api.roles.urls")),
     path("api/stats/", include("stats.presentation.api.stats.urls")),
     path("api/audit/", include("audit.presentation.api.audit.urls")),
-    path("api/notifications/", include("notifications.presentation.api.notifications.urls")),
+    path(
+        "api/notifications/",
+        include("notifications.presentation.api.notifications.urls"),
+    ),
     path("api/courses/", include("courses.presentation.api.courses.urls")),
     path(
         "api/continuing_education/",
@@ -32,10 +35,18 @@ urlpatterns = [
     ),
     path(
         "api/wellbeing_beneficiaries/",
-        include("wellbeing_beneficiaries.presentation.api.wellbeing_beneficiaries.urls"),
+        include(
+            "wellbeing_beneficiaries.presentation.api.wellbeing_beneficiaries.urls"
+        ),
     ),
     path(
         "api/wellbeing_human_resources/",
-        include("wellbeing_human_resources.presentation.api.wellbeing_human_resources.urls"),
+        include(
+            "wellbeing_human_resources.presentation.api.wellbeing_human_resources.urls"
+        ),
+    ),
+    path(
+        "api/software_activities/",
+        include("software_activities.presentation.api.software_activities.urls"),
     ),
 ]
