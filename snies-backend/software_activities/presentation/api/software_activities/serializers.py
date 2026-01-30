@@ -15,12 +15,15 @@ class BeneficiaryBreakdownSerializer(serializers.ModelSerializer):
 
 
 class SoftwareActivitySerializer(serializers.ModelSerializer):
-    beneficiary_breakdowns = BeneficiaryBreakdownSerializer(many=True, required=False)
+    beneficiary_breakdowns = BeneficiaryBreakdownSerializer(
+        many=True, required=False
+    )
 
     class Meta:
         model = SoftwareActivityModel
         fields = [
             "id",
+            "career",
             "year",
             "semester",
             "start_date",
@@ -66,9 +69,10 @@ class SoftwareActivitySerializer(serializers.ModelSerializer):
         if breakdowns:
             SoftwareActivityBeneficiaryBreakdownModel.objects.bulk_create(
                 [
-                    SoftwareActivityBeneficiaryBreakdownModel(activity=activity, **b)
+                    SoftwareActivityBeneficiaryBreakdownModel(
+                        activity=activity, **b
+                    )
                     for b in breakdowns
                 ]
             )
         return activity
-

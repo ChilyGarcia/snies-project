@@ -73,7 +73,9 @@ def _norm(s: str) -> str:
 
 def _ffill_row(values: list[str]) -> list[str]:
     """
-    Forward-fill de celdas vacías (útil para merges: solo la primera celda tiene valor).
+    Forward-fill de celdas vacías.
+
+    Útil para merges: solo la primera celda tiene valor.
     """
     out: list[str] = []
     last = ""
@@ -99,7 +101,10 @@ def _build_composite_headers(
         vals = []
         for c in range(1, max_col + 1):
             v = ws.cell(r, c).value
-            vals.append(str(v).strip().replace("\n", " ") if v is not None else "")
+            if v is None:
+                vals.append("")
+            else:
+                vals.append(str(v).strip().replace("\n", " "))
         if ffill_rows and r in ffill_rows:
             vals = _ffill_row(vals)
         rows.append(vals)
@@ -205,7 +210,8 @@ class ImportSoftwareActivitiesFromExcelUseCase:
         self.repository = repository
 
     def execute(self, file_obj: BinaryIO) -> ImportResult:
-        # read_only=False para poder leer merges/encabezados multinivel con más fiabilidad
+        # read_only=False para poder leer merges/encabezados multinivel
+        # con más fiabilidad.
         wb = load_workbook(filename=file_obj, data_only=True, read_only=False)
         ws = wb["Software"] if "Software" in wb.sheetnames else wb.worksheets[0]
 
@@ -231,7 +237,8 @@ class ImportSoftwareActivitiesFromExcelUseCase:
         data_start_row = header_row + 1
         sub_joined = _norm(
             " ".join(
-                str(ws.cell(header_row + 1, c).value or "") for c in range(1, ws.max_column + 1)
+                str(ws.cell(header_row + 1, c).value or "")
+                for c in range(1, ws.max_column + 1)
             )
         )
         if "ID_CINE" in sub_joined or "NUM_HORAS" in sub_joined or "TECNOLOGO" in sub_joined:
@@ -265,7 +272,8 @@ class ImportSoftwareActivitiesFromExcelUseCase:
             idx_name = col("NOMBRE_DE LA ACTIVDAD") or 6
         idx_agreement = (
             col(
-                "LA ACTIVIDAD SE DESARROLLO EN MARCO DE UN CONVENIO-  DETALLE EL NOMBRE DE LA ENTIDAD"
+                "LA ACTIVIDAD SE DESARROLLO EN MARCO DE UN CONVENIO-  "
+                "DETALLE EL NOMBRE DE LA ENTIDAD"
             )
             or 7
         )
@@ -276,7 +284,8 @@ class ImportSoftwareActivitiesFromExcelUseCase:
             )
             or 9
         )
-        # En la plantilla real, el CINE viene en la misma columna J (como "613  Desarrollo...")
+        # En la plantilla real, el CINE viene en la misma columna J
+        # (como "613  Desarrollo...").
         idx_cine_id = col("|ID_CINE_CAMPO_DETALLADO") or 9
         idx_hours = col("NUM_HORAS") or 10
         idx_activity_type = col("ID_TIPO_ ACTIVIDAD") or 11
@@ -340,6 +349,7 @@ class ImportSoftwareActivitiesFromExcelUseCase:
 
             activity = SoftwareActivity(
                 id=None,
+                career=None,
                 year=year or 0,
                 semester=semester or 0,
                 start_date=start_date,

@@ -4,6 +4,9 @@ from django.db import models
 class SoftwareActivityModel(models.Model):
     id = models.AutoField(primary_key=True)
 
+    # Carrera / programa al que pertenece la actividad (tag para filtrado)
+    career = models.CharField(max_length=64, null=True, blank=True)
+
     year = models.IntegerField()
     semester = models.IntegerField()
 

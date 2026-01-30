@@ -23,6 +23,7 @@ class SoftwareActivityRepositoryDjango(SoftwareActivityRepository):
     ) -> SoftwareActivity:
         with transaction.atomic():
             m = SoftwareActivityModel.objects.create(
+                career=activity.career,
                 year=activity.year,
                 semester=activity.semester,
                 start_date=activity.start_date,
@@ -84,41 +85,7 @@ class SoftwareActivityRepositoryDjango(SoftwareActivityRepository):
 
         with transaction.atomic():
             created_models = SoftwareActivityModel.objects.bulk_create(
-                [
-                    SoftwareActivityModel(
-                        year=a.year,
-                        semester=a.semester,
-                        start_date=a.start_date,
-                        end_date=a.end_date,
-                        execution_place=a.execution_place,
-                        campus=a.campus,
-                        activity_name=a.activity_name,
-                        agreement_entity=a.agreement_entity,
-                        description=a.description,
-                        cine_isced_name=a.cine_isced_name,
-                        cine_field_detailed_id=a.cine_field_detailed_id,
-                        num_hours=a.num_hours,
-                        activity_type=a.activity_type,
-                        course_value=a.course_value,
-                        teacher_document_type=a.teacher_document_type,
-                        teacher_document_number=a.teacher_document_number,
-                        total_beneficiaries=a.total_beneficiaries,
-                        professors_count=a.professors_count,
-                        administrative_count=a.administrative_count,
-                        external_people_count=a.external_people_count,
-                        speaker_full_name=a.speaker_full_name,
-                        speaker_origin=a.speaker_origin,
-                        speaker_company=a.speaker_company,
-                        consultancy_entity_name=a.consultancy_entity_name,
-                        consultancy_sector_id=a.consultancy_sector_id,
-                        consultancy_value=a.consultancy_value,
-                        evidence_event_planning=a.evidence_event_planning,
-                        evidence_attendance_control=a.evidence_attendance_control,
-                        evidence_program_design_guide=a.evidence_program_design_guide,
-                        evidence_audiovisual_record=a.evidence_audiovisual_record,
-                    )
-                    for a in activities
-                ]
+                [self._to_model(a) for a in activities]
             )
 
             breakdown_rows: list[SoftwareActivityBeneficiaryBreakdownModel] = []
@@ -135,12 +102,16 @@ class SoftwareActivityRepositoryDjango(SoftwareActivityRepository):
                         )
                     )
             if breakdown_rows:
-                SoftwareActivityBeneficiaryBreakdownModel.objects.bulk_create(breakdown_rows)
+                SoftwareActivityBeneficiaryBreakdownModel.objects.bulk_create(
+                    breakdown_rows
+                )
 
         return len(activities)
 
     def list(self, limit: int = 100, offset: int = 0) -> list[SoftwareActivity]:
-        qs = SoftwareActivityModel.objects.all().order_by("-id")[offset : offset + limit]
+        qs = SoftwareActivityModel.objects.all().order_by("-id")[
+            offset: offset + limit
+        ]
         return [self._to_domain(x) for x in qs]
 
     def list_with_breakdowns(
@@ -149,7 +120,7 @@ class SoftwareActivityRepositoryDjango(SoftwareActivityRepository):
         qs = (
             SoftwareActivityModel.objects.all()
             .prefetch_related("beneficiary_breakdowns")
-            .order_by("-id")[offset : offset + limit]
+            .order_by("-id")[offset: offset + limit]
         )
         out: list[tuple[SoftwareActivity, list[BeneficiaryBreakdown]]] = []
         for m in qs:
@@ -172,6 +143,7 @@ class SoftwareActivityRepositoryDjango(SoftwareActivityRepository):
     def _to_domain(self, m: SoftwareActivityModel) -> SoftwareActivity:
         return SoftwareActivity(
             id=m.id,
+            career=getattr(m, "career", None),
             year=m.year,
             semester=m.semester,
             start_date=m.start_date,
@@ -204,3 +176,37 @@ class SoftwareActivityRepositoryDjango(SoftwareActivityRepository):
             evidence_audiovisual_record=bool(m.evidence_audiovisual_record),
         )
 
+    def _to_model(self, a: SoftwareActivity) -> SoftwareActivityModel:
+        return SoftwareActivityModel(
+            career=a.career,
+            year=a.year,
+            semester=a.semester,
+            start_date=a.start_date,
+            end_date=a.end_date,
+            execution_place=a.execution_place,
+            campus=a.campus,
+            activity_name=a.activity_name,
+            agreement_entity=a.agreement_entity,
+            description=a.description,
+            cine_isced_name=a.cine_isced_name,
+            cine_field_detailed_id=a.cine_field_detailed_id,
+            num_hours=a.num_hours,
+            activity_type=a.activity_type,
+            course_value=a.course_value,
+            teacher_document_type=a.teacher_document_type,
+            teacher_document_number=a.teacher_document_number,
+            total_beneficiaries=a.total_beneficiaries,
+            professors_count=a.professors_count,
+            administrative_count=a.administrative_count,
+            external_people_count=a.external_people_count,
+            speaker_full_name=a.speaker_full_name,
+            speaker_origin=a.speaker_origin,
+            speaker_company=a.speaker_company,
+            consultancy_entity_name=a.consultancy_entity_name,
+            consultancy_sector_id=a.consultancy_sector_id,
+            consultancy_value=a.consultancy_value,
+            evidence_event_planning=a.evidence_event_planning,
+            evidence_attendance_control=a.evidence_attendance_control,
+            evidence_program_design_guide=a.evidence_program_design_guide,
+            evidence_audiovisual_record=a.evidence_audiovisual_record,
+        )

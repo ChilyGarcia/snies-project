@@ -8,6 +8,7 @@ from decimal import Decimal
 @dataclass(frozen=True)
 class SoftwareActivity:
     id: int | None
+    career: str | None
     year: int
     semester: int
     start_date: date | None
@@ -49,4 +50,3 @@ class BeneficiaryBreakdown:
     program: str
     level: str  # técnico|tecnólogo|profesional
     count: int
-

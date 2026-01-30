@@ -9,24 +9,18 @@ from rest_framework.response import Response
 
 from users.presentation.permissions import HasModulePermission
 
-from software_activities.application.use_cases.import_software_activities_from_excel import (
+from ....application.use_cases.import_software_activities_from_excel import (
     ImportSoftwareActivitiesFromExcelUseCase,
 )
-from software_activities.application.use_cases.list_software_activities import (
-    ListSoftwareActivitiesUseCase,
-)
-from software_activities.application.use_cases.export_software_activities_to_excel import (
+from ....application.use_cases.list_software_activities import ListSoftwareActivitiesUseCase
+from ....application.use_cases.export_software_activities_to_excel import (
     ExportSoftwareActivitiesToExcelUseCase,
 )
-from software_activities.infraestructure.persistence.django.software_activity_repository import (
+from ....infraestructure.persistence.django.software_activity_repository import (
     SoftwareActivityRepositoryDjango,
 )
-from software_activities.presentation.api.software_activities.serializers import (
-    SoftwareActivitySerializer,
-)
-from software_activities.infraestructure.persistence.django.models import (
-    SoftwareActivityModel,
-)
+from .serializers import SoftwareActivitySerializer
+from ....infraestructure.persistence.django.models import SoftwareActivityModel
 
 
 class SoftwareActivityListCreateAPIView(AuditedAPIView):
@@ -48,14 +42,20 @@ class SoftwareActivityListCreateAPIView(AuditedAPIView):
     def get(self, request):
         limit = int(request.query_params.get("limit", "100"))
         offset = int(request.query_params.get("offset", "0"))
+        career = request.query_params.get("career")
+        career = career.strip() if isinstance(career, str) else None
+
         use_case = ListSoftwareActivitiesUseCase(
             repository=SoftwareActivityRepositoryDjango()
         )
         activities = use_case.execute(limit=limit, offset=offset)
         # devolvemos desde ORM para incluir breakdowns (prefetch)
         ids = [a.id for a in activities if a.id is not None]
+        qs = SoftwareActivityModel.objects.filter(id__in=ids)
+        if career:
+            qs = qs.filter(career=career)
         qs = (
-            SoftwareActivityModel.objects.filter(id__in=ids)
+            qs
             .prefetch_related("beneficiary_breakdowns")
             .order_by("-id")
         )
@@ -108,5 +108,7 @@ class SoftwareActivityExportExcelAPIView(AuditedAPIView):
         )
         result = use_case.execute(limit=5000, offset=0)
         resp = HttpResponse(result.data, content_type=result.content_type)
-        resp["Content-Disposition"] = f'attachment; filename="{result.filename}"'
+        resp["Content-Disposition"] = (
+            f'attachment; filename="{result.filename}"'
+        )
         return resp

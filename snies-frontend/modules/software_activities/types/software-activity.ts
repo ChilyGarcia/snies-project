@@ -8,6 +8,7 @@ export type BeneficiaryBreakdown = {
 
 export type SoftwareActivity = {
   id: number;
+  career: string | null;
   year: number;
   semester: number;
   start_date: string | null;
@@ -47,6 +48,7 @@ export type SoftwareActivity = {
 };
 
 export type CreateSoftwareActivityInput = {
+  career?: string | null;
   year: number;
   semester: number;
   start_date?: string | null;

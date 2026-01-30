@@ -15,12 +15,15 @@ function authHeaders() {
 export async function listSoftwareActivities(params?: {
   limit?: number;
   offset?: number;
+  career?: string;
 }): Promise<SoftwareActivity[]> {
   const limit = params?.limit ?? 100;
   const offset = params?.offset ?? 0;
+  const career = params?.career?.trim();
+  const careerQuery = career ? `&career=${encodeURIComponent(career)}` : "";
 
   const res = await fetch(
-    `${requireApiUrl()}/api/software_activities/?limit=${limit}&offset=${offset}`,
+    `${requireApiUrl()}/api/software_activities/?limit=${limit}&offset=${offset}${careerQuery}`,
     { method: "GET", headers: authHeaders() }
   );
   if (!res.ok) {

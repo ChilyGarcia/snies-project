@@ -13,7 +13,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Loader2, Sparkles } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { Check, ChevronsUpDown, Loader2, Sparkles } from "lucide-react";
 
 import type { BeneficiaryBreakdown, CreateSoftwareActivityInput } from "@/modules/software_activities/types/software-activity";
 
@@ -32,7 +35,133 @@ function sumByPopulation(bds: BeneficiaryBreakdown[], population: string) {
   return bds.reduce((acc, b) => acc + (b.population === population ? (b.count || 0) : 0), 0);
 }
 
+type CineOption = { code: string; name: string };
+
+const CINE_OPTIONS: CineOption[] = [
+  { code: "11", name: "Programas y certificaciones básicas" },
+  { code: "21", name: "Alfabetización y aritmética elemental" },
+  { code: "31", name: "Competencias personales y desarrollo" },
+  { code: "111", name: "Ciencias de la educación" },
+  { code: "112", name: "Formación para docentes de educación pre-primaría" },
+  { code: "113", name: "Formación para docentes sin asignatura de especialización" },
+  { code: "114", name: "Formación para docentes con asignatura de especialización" },
+  { code: "211", name: "Técnicas audiovisuales y producción para medios de comunicación" },
+  { code: "212", name: "Diseño industrial, de modas e interiores" },
+  { code: "213", name: "Bellas artes" },
+  { code: "214", name: "Artesanías" },
+  { code: "215", name: "Música y artes escénicas" },
+  { code: "221", name: "Religión y Teología" },
+  { code: "222", name: "Historia y arqueología" },
+  { code: "223", name: "Filosofía y ética" },
+  { code: "231", name: "Adquisición del lenguaje" },
+  { code: "232", name: "Literatura y lingüística" },
+  { code: "311", name: "Economía" },
+  { code: "312", name: "Ciencias políticas y educación cívica" },
+  { code: "313", name: "Psicología" },
+  { code: "314", name: "Sociología y estudios culturales" },
+  { code: "321", name: "Periodismo y reportajes" },
+  { code: "322", name: "Bibliotecología, información y archivología" },
+  { code: "411", name: "Contabilidad e impuestos" },
+  { code: "412", name: "Gestión financiera, administración bancaria y seguros" },
+  { code: "413", name: "Gestión y administración" },
+  { code: "414", name: "Mercadotecnia y publicidad" },
+  { code: "415", name: "Secretariado y trabajo de oficina" },
+  { code: "416", name: "Ventas al por mayor y al por menor" },
+  { code: "417", name: "Competencias laborales" },
+  { code: "421", name: "Derecho" },
+  { code: "511", name: "Biología" },
+  { code: "512", name: "Bioquímica" },
+  { code: "521", name: "Ciencias del medio ambiente" },
+  { code: "522", name: "Medio ambiente natural y vida silvestre" },
+  { code: "531", name: "Química" },
+  { code: "532", name: "Ciencias de la tierra" },
+  { code: "533", name: "Física" },
+  { code: "541", name: "Matemáticas" },
+  { code: "542", name: "Estadística" },
+  { code: "611", name: "Uso de computadores" },
+  { code: "612", name: "Diseño y administración de redes y bases de datos" },
+  { code: "613", name: "Desarrollo y análisis de software y aplicaciones" },
+  { code: "711", name: "Ingeniería y procesos químicos" },
+  { code: "712", name: "Tecnología de protección del medio ambiente" },
+  { code: "713", name: "Electricidad y energía" },
+  { code: "714", name: "Electrónica y automatización" },
+  { code: "715", name: "Mecánica y profesiones afines a la metalistería" },
+  { code: "716", name: "Vehículos, barcos y aeronaves motorizadas" },
+  { code: "721", name: "Procesamiento de alimentos" },
+  { code: "722", name: "Materiales (vidrio, papel, plástico y madera)" },
+  { code: "723", name: "Producción textiles (ropa, calzado y artículos de cuero)" },
+  { code: "724", name: "Minería y extracción" },
+  { code: "731", name: "Arquitectura y urbanismo" },
+  { code: "732", name: "Construcción e ingeniería civil" },
+  { code: "811", name: "Producción agrícola y ganadera" },
+  { code: "812", name: "Horticultura" },
+  { code: "821", name: "Silvicultura" },
+  { code: "831", name: "Pesca" },
+  { code: "841", name: "Veterinaria" },
+  { code: "911", name: "Odontología" },
+  { code: "912", name: "Medicina" },
+  { code: "913", name: "Enfermería y partería" },
+  { code: "914", name: "Tecnología de diagnóstico y tratamiento médico" },
+  { code: "915", name: "Terapia y rehabilitación" },
+  { code: "916", name: "Farmacia" },
+  { code: "917", name: "Medicina y terapia tradicional y complementaria" },
+  { code: "921", name: "Asistencia a adultos mayores y discapacitados" },
+  { code: "922", name: "Asistencia a la infancia y servicios para jóvenes" },
+  { code: "923", name: "Trabajo social y orientación" },
+  { code: "1011", name: "Servicios domésticos" },
+  { code: "1012", name: "Peluquería y tratamientos de belleza" },
+  { code: "1013", name: "Hotelería, restaurantes y servicios de banquetes" },
+  { code: "1014", name: "Deportes" },
+  { code: "1015", name: "Viajes, turismo y actividades recreativas" },
+  { code: "1021", name: "Saneamiento de la comunidad" },
+  { code: "1022", name: "Salud y protección laboral" },
+  { code: "1031", name: "Educación militar y de defensa" },
+  { code: "1032", name: "Protección de las personas y de la propiedad" },
+  { code: "1041", name: "Servicios de transporte" },
+];
+
+const ACTIVITY_TYPE_OPTIONS = [
+  { value: "1 Cursos, cursos especializados (certificaciones)", label: "1 Cursos, cursos especializados (certificaciones)" },
+  { value: "2 Talleres", label: "2 Talleres" },
+  { value: "3 Diplomados", label: "3 Diplomados" },
+  { value: "4 Seminarios, Congresos o simposios", label: "4 Seminarios, Congresos o simposios" },
+  { value: "5 Otro", label: "5 Otro" },
+  { value: "6 Consultoria", label: "6 Consultoria" },
+  { value: "7 Eventos", label: "7 Eventos" },
+] as const;
+
+const TEACHER_DOCUMENT_TYPE_OPTIONS = [
+  { value: "CC  Cédula de ciudadanía", label: "CC  Cédula de ciudadanía" },
+  { value: "DE  Documento de Identidad Extranjera", label: "DE  Documento de Identidad Extranjera" },
+  { value: "CE  Cédula de Extranjería", label: "CE  Cédula de Extranjería" },
+  { value: "TI  Tarjeta de Identidad", label: "TI  Tarjeta de Identidad" },
+  { value: "PS  Pasaporte", label: "PS  Pasaporte" },
+  { value: "CA  Certificado cabildo", label: "CA  Certificado cabildo" },
+] as const;
+
+const CONSULTANCY_SECTOR_OPTIONS = [
+  { value: "1 Sector Empresarial", label: "1 Sector Empresarial" },
+  { value: "2 Sector Administración Pública", label: "2 Sector Administración Pública" },
+  { value: "3 Centros de Investigación y Desarrollo Tecnológico", label: "3 Centros de Investigación y Desarrollo Tecnológico" },
+  { value: "4 Hospitales y Clínicas", label: "4 Hospitales y Clínicas" },
+  { value: "5 Instituciones privadas sin ánimo de lucro", label: "5 Instituciones privadas sin ánimo de lucro" },
+  { value: "6 Instituciones de Educación", label: "6 Instituciones de Educación" },
+  { value: "7 Comunidad", label: "7 Comunidad" },
+  { value: "8 Otro", label: "8 Otro" },
+] as const;
+
 const schema = z.object({
+  career: z.enum(
+    [
+      "Ing. Software",
+      "Diseño Gráfico",
+      "Negocios Internacionales",
+      "Diseño de Modas",
+      "Administración Turística",
+      "Administración Financiera",
+    ],
+    { message: "Carrera inválida" }
+  ),
   year: z.coerce.number().int().min(2000).max(2100),
   semester: z.coerce
     .number()
@@ -77,10 +206,14 @@ export function SoftwareActivityForm(props: {
 }) {
   const [submitting, setSubmitting] = useState(false);
   const [breakdownMap, setBreakdownMap] = useState<Record<string, number | null>>({});
+  const [cineOpen, setCineOpen] = useState(false);
+  const [courseValueText, setCourseValueText] = useState("");
+  const [consultancyValueText, setConsultancyValueText] = useState("");
   const yearNow = new Date().getFullYear();
 
   const defaults = useMemo<FormValues>(
     () => ({
+      career: "Ing. Software",
       year: yearNow,
       semester: 1,
       start_date: null,
@@ -124,12 +257,20 @@ export function SoftwareActivityForm(props: {
   const closeAndReset = () => {
     form.reset(defaults);
     setBreakdownMap({});
+    setCourseValueText("");
+    setConsultancyValueText("");
     props.onClose();
   };
 
   const submit = form.handleSubmit(async (values) => {
     setSubmitting(true);
     try {
+      const parsedCourseValue = parseMoneyLoose(courseValueText);
+      const courseValue = parsedCourseValue ?? values.course_value ?? null;
+
+      const parsedConsultancyValue = parseMoneyLoose(consultancyValueText);
+      const consultancyValue = parsedConsultancyValue ?? values.consultancy_value ?? null;
+
       const breakdowns: BeneficiaryBreakdown[] = Object.entries(breakdownMap)
         .filter(([, v]) => v !== null && v !== undefined && !Number.isNaN(Number(v)))
         .map(([k, v]) => {
@@ -159,6 +300,8 @@ export function SoftwareActivityForm(props: {
 
       await props.onSubmit({
         ...values,
+        course_value: courseValue,
+        consultancy_value: consultancyValue,
         professors_count: professorsCount,
         total_beneficiaries: totalBeneficiaries,
         beneficiary_breakdowns: breakdowns.length ? breakdowns : undefined,
@@ -184,24 +327,81 @@ export function SoftwareActivityForm(props: {
     };
   }, [breakdownMap]);
 
+  const formatMoneyEsCo = (n: number) =>
+    new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 }).format(n);
+
+  const parseMoneyLoose = (raw: string): number | null => {
+    const s = (raw || "").trim();
+    if (!s) return null;
+    // deja solo dígitos, separadores y signo
+    const keep = s.replace(/[^\d.,-]/g, "");
+    const hasComma = keep.includes(",");
+    const hasDot = keep.includes(".");
+    let normalized = keep;
+
+    if (hasComma && hasDot) {
+      // es-CO típico: . miles y , decimales
+      normalized = normalized.replace(/\./g, "").replace(/,/g, ".");
+    } else if (hasComma) {
+      // coma como decimal
+      normalized = normalized.replace(/,/g, ".");
+    } else if (hasDot) {
+      // si hay 1 punto y quedan 1-2 decimales -> decimal; si no, miles
+      const parts = normalized.split(".");
+      const last = parts[parts.length - 1] ?? "";
+      if (parts.length === 2 && last.length > 0 && last.length <= 2) {
+        // decimal
+        normalized = normalized;
+      } else {
+        // miles
+        normalized = normalized.replace(/\./g, "");
+      }
+    }
+
+    const n = Number(normalized);
+    return Number.isFinite(n) ? n : null;
+  };
+
   return (
     <Dialog open={props.open} onOpenChange={(o) => (!o ? closeAndReset() : null)}>
       <DialogContent className="max-w-3xl">
-        <DialogHeader>
+        <DialogHeader className="space-y-2 pb-2">
           <DialogTitle className="flex items-center gap-2">
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/15">
               <Sparkles className="h-4 w-4 text-primary" />
             </span>
             Registrar actividad (Ing. Software)
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="leading-relaxed">
             Completa los datos principales y, si aplica, agrega evidencias. Puedes
             dejar campos opcionales vacíos.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={submit} className="space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <form onSubmit={submit} className="space-y-6 pt-2">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+            <div className="space-y-2 md:col-span-2">
+              <Label>Carrera *</Label>
+              <Select
+                value={form.watch("career")}
+                onValueChange={(v) => form.setValue("career", v as FormValues["career"])}
+              >
+                <SelectTrigger className="w-full bg-background">
+                  <SelectValue placeholder="Seleccione" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Ing. Software">Ing. Software</SelectItem>
+                  <SelectItem value="Diseño Gráfico">Diseño Gráfico</SelectItem>
+                  <SelectItem value="Negocios Internacionales">Negocios Internacionales</SelectItem>
+                  <SelectItem value="Diseño de Modas">Diseño de Modas</SelectItem>
+                  <SelectItem value="Administración Turística">Administración Turística</SelectItem>
+                  <SelectItem value="Administración Financiera">Administración Financiera</SelectItem>
+                </SelectContent>
+              </Select>
+              {fieldError("career") ? (
+                <div className="text-xs text-destructive">{fieldError("career")}</div>
+              ) : null}
+            </div>
             <div className="space-y-2">
               <Label>Año *</Label>
               <Input type="number" {...form.register("year")} />
@@ -293,20 +493,95 @@ export function SoftwareActivityForm(props: {
               <AccordionTrigger>Detalles académicos</AccordionTrigger>
               <AccordionContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Clasificación CINE (texto)</Label>
-                    <Input
-                      placeholder="613 Desarrollo y análisis de software…"
-                      {...form.register("cine_isced_name")}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>ID CINE campo detallado</Label>
-                    <Input placeholder="613" {...form.register("cine_field_detailed_id")} />
+                  <div className="space-y-2 md:col-span-2">
+                    <div className="flex items-end justify-between gap-2">
+                      <Label>Clasificación CINE (campo detallado)</Label>
+                      {form.watch("cine_field_detailed_id") || form.watch("cine_isced_name") ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 px-2 text-xs"
+                          onClick={() => {
+                            form.setValue("cine_field_detailed_id", null);
+                            form.setValue("cine_isced_name", null);
+                          }}
+                        >
+                          Limpiar
+                        </Button>
+                      ) : null}
+                    </div>
+
+                    <Popover open={cineOpen} onOpenChange={setCineOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={cineOpen}
+                          className="w-full justify-between bg-background"
+                        >
+                          <span className="truncate">
+                            {form.watch("cine_isced_name")
+                              ? form.watch("cine_isced_name")
+                              : "Selecciona una clasificación CINE..."}
+                          </span>
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Buscar por código o nombre..." />
+                          <CommandList>
+                            <CommandEmpty>Sin resultados</CommandEmpty>
+                            <CommandGroup>
+                              {CINE_OPTIONS.map((opt) => {
+                                const value = `${opt.code} ${opt.name}`;
+                                const selected = form.watch("cine_field_detailed_id") === opt.code;
+                                return (
+                                  <CommandItem
+                                    key={opt.code}
+                                    value={value}
+                                    onSelect={() => {
+                                      form.setValue("cine_field_detailed_id", opt.code, { shouldDirty: true });
+                                      // Guardamos el texto combinado para que exporte idéntico a la plantilla
+                                      form.setValue("cine_isced_name", value, { shouldDirty: true });
+                                      setCineOpen(false);
+                                    }}
+                                  >
+                                    <Check className={cn("mr-2 h-4 w-4", selected ? "opacity-100" : "opacity-0")} />
+                                    <span className="font-medium tabular-nums">{opt.code}</span>
+                                    <span className="ml-2 text-sm text-muted-foreground truncate">{opt.name}</span>
+                                  </CommandItem>
+                                );
+                              })}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+
+                    <div className="text-xs text-muted-foreground">
+                      Se guardará en Excel como “código + nombre” y el ID se toma del código.
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label>Tipo de actividad</Label>
-                    <Input placeholder="2 Talleres" {...form.register("activity_type")} />
+                    <Select
+                      value={form.watch("activity_type") ?? ""}
+                      onValueChange={(v) => form.setValue("activity_type", v || null)}
+                    >
+                      <SelectTrigger className="w-full bg-background">
+                        <SelectValue placeholder="Seleccione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ACTIVITY_TYPE_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label>Número de horas</Label>
@@ -318,7 +593,7 @@ export function SoftwareActivityForm(props: {
                   </div>
                   <div className="space-y-2 md:col-span-2">
                     <Label>Convenio (entidad)</Label>
-                    <Input placeholder="AENS TECH" {...form.register("agreement_entity")} />
+                    <Input placeholder="JADE S.A.S" {...form.register("agreement_entity")} />
                   </div>
                 </div>
               </AccordionContent>
@@ -330,7 +605,21 @@ export function SoftwareActivityForm(props: {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Tipo documento</Label>
-                    <Input placeholder="CC" {...form.register("teacher_document_type")} />
+                    <Select
+                      value={form.watch("teacher_document_type") ?? ""}
+                      onValueChange={(v) => form.setValue("teacher_document_type", v || null)}
+                    >
+                      <SelectTrigger className="w-full bg-background">
+                        <SelectValue placeholder="Seleccione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TEACHER_DOCUMENT_TYPE_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label>Número documento</Label>
@@ -338,7 +627,21 @@ export function SoftwareActivityForm(props: {
                   </div>
                   <div className="space-y-2 md:col-span-2">
                     <Label>Valor del curso (COP)</Label>
-                    <Input type="number" min={0} step="0.01" {...form.register("course_value")} />
+                    <Input
+                      inputMode="decimal"
+                      placeholder="Ej. 2.333.333"
+                      value={courseValueText}
+                      onChange={(e) => setCourseValueText(e.target.value)}
+                      onBlur={() => {
+                        const n = parseMoneyLoose(courseValueText);
+                        form.setValue("course_value", n, { shouldDirty: true });
+                        setCourseValueText(n === null ? "" : formatMoneyEsCo(n));
+                      }}
+                    />
+                    <div className="text-xs text-muted-foreground">
+                      Se formatea con separador de miles. Puedes pegar valores como <span className="font-medium">2333333</span> o{" "}
+                      <span className="font-medium">2.333.333</span>.
+                    </div>
                   </div>
                 </div>
               </AccordionContent>
@@ -498,11 +801,39 @@ export function SoftwareActivityForm(props: {
                   </div>
                   <div className="space-y-2">
                     <Label>Sector (ID)</Label>
-                    <Input {...form.register("consultancy_sector_id")} />
+                    <Select
+                      value={form.watch("consultancy_sector_id") ?? ""}
+                      onValueChange={(v) => form.setValue("consultancy_sector_id", v || null)}
+                    >
+                      <SelectTrigger className="w-full bg-background">
+                        <SelectValue placeholder="Seleccione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CONSULTANCY_SECTOR_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2 md:col-span-3">
                     <Label>Valor (COP)</Label>
-                    <Input type="number" min={0} step="0.01" {...form.register("consultancy_value")} />
+                    <Input
+                      inputMode="decimal"
+                      placeholder="Ej. 2.131.321"
+                      value={consultancyValueText}
+                      onChange={(e) => setConsultancyValueText(e.target.value)}
+                      onBlur={() => {
+                        const n = parseMoneyLoose(consultancyValueText);
+                        form.setValue("consultancy_value", n, { shouldDirty: true });
+                        setConsultancyValueText(n === null ? "" : formatMoneyEsCo(n));
+                      }}
+                    />
+                    <div className="text-xs text-muted-foreground">
+                      Se formatea con separador de miles. Puedes pegar valores como <span className="font-medium">2131321</span> o{" "}
+                      <span className="font-medium">2.131.321</span>.
+                    </div>
                   </div>
                 </div>
               </AccordionContent>

@@ -15,6 +15,7 @@ import {
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/empty-state";
 
@@ -34,6 +35,7 @@ export function RegisteredSoftwareActivitiesPanel() {
 
   const [openForm, setOpenForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [careerFilter, setCareerFilter] = useState<string>("all");
   const [selected, setSelected] = useState<SoftwareActivity | null>(null);
 
   const [items, setItems] = useState<SoftwareActivity[]>([]);
@@ -51,7 +53,11 @@ export function RegisteredSoftwareActivitiesPanel() {
     setLoading(true);
     setError(null);
     try {
-      const data = await listSoftwareActivities({ limit: 200, offset: 0 });
+      const data = await listSoftwareActivities({
+        limit: 200,
+        offset: 0,
+        career: careerFilter !== "all" ? careerFilter : undefined,
+      });
       if (r !== reqId.current) return;
       setItems(data);
     } catch (e) {
@@ -67,21 +73,24 @@ export function RegisteredSoftwareActivitiesPanel() {
   useEffect(() => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [careerFilter]);
 
   const filtered = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter((a) => {
+    const byCareer =
+      careerFilter === "all" ? items : items.filter((a) => a.career === careerFilter);
+    if (!q) return byCareer;
+    return byCareer.filter((a) => {
       return (
         a.activity_name.toLowerCase().includes(q) ||
         a.execution_place.toLowerCase().includes(q) ||
         String(a.year).includes(q) ||
         String(a.semester).includes(q) ||
-        (a.campus || "").toLowerCase().includes(q)
+        (a.campus || "").toLowerCase().includes(q) ||
+        (a.career || "").toLowerCase().includes(q)
       );
     });
-  }, [items, searchTerm]);
+  }, [items, searchTerm, careerFilter]);
 
   const handleCreate = async (payload: CreateSoftwareActivityInput) => {
     const res = await createSoftwareActivity(payload);
@@ -178,16 +187,34 @@ export function RegisteredSoftwareActivitiesPanel() {
 
                 <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                   {tab === "activities" ? (
-                    <div className="relative w-full sm:w-[340px]">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                      <Input
-                        placeholder="Buscar por nombre, sede, lugar…"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 bg-background rounded-full"
-                        disabled={loading}
-                      />
-                    </div>
+                    <>
+                      <div className="w-full sm:w-[240px]">
+                        <Select value={careerFilter} onValueChange={(v) => setCareerFilter(v)}>
+                          <SelectTrigger className="w-full bg-background rounded-full">
+                            <SelectValue placeholder="Carrera" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">Todas las carreras</SelectItem>
+                            <SelectItem value="Ing. Software">Ing. Software</SelectItem>
+                            <SelectItem value="Diseño Gráfico">Diseño Gráfico</SelectItem>
+                            <SelectItem value="Negocios Internacionales">Negocios Internacionales</SelectItem>
+                            <SelectItem value="Diseño de Modas">Diseño de Modas</SelectItem>
+                            <SelectItem value="Administración Turística">Administración Turística</SelectItem>
+                            <SelectItem value="Administración Financiera">Administración Financiera</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="relative w-full sm:w-[320px]">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                        <Input
+                          placeholder="Buscar por nombre, sede, lugar…"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10 bg-background rounded-full"
+                          disabled={loading}
+                        />
+                      </div>
+                    </>
                   ) : null}
 
                   <Button
@@ -265,6 +292,13 @@ export function RegisteredSoftwareActivitiesPanel() {
                               <CardDescription className="mt-1 line-clamp-2">
                                 {a.execution_place}
                               </CardDescription>
+                              {a.career ? (
+                                <div className="mt-2">
+                                  <span className="inline-flex items-center rounded-full border border-border bg-muted/20 px-2.5 py-1 text-xs font-semibold text-foreground">
+                                    {a.career}
+                                  </span>
+                                </div>
+                              ) : null}
                             </div>
                           </div>
                         </CardHeader>

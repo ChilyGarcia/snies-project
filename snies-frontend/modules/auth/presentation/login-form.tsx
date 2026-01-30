@@ -52,7 +52,7 @@ export function LoginForm({ onSubmit }: Props) {
                   <img src="/logo-fesc.png" alt="FESC" className="h-7 w-7 object-contain"/>
                 </div>
                 <div className="leading-tight">
-                  <div className="text-sm font-semibold text-gray-900">FESC</div>
+                  <div className="text-sm font-semibold text-gray-900">Repositorio de actividades  FESC</div>
                   <div className="text-xs text-gray-500">Portal de acceso</div>
                 </div>
               </div>

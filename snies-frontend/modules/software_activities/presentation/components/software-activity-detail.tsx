@@ -9,7 +9,7 @@ function Info({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="rounded-xl border border-border bg-card p-3 md:p-4">
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="mt-1 text-sm font-medium break-words">{value}</div>
+      <div className="mt-1 text-sm font-medium wrap-break-word">{value}</div>
     </div>
   );
 }
@@ -38,6 +38,11 @@ export function SoftwareActivityDetail(props: {
                 <Badge className="rounded-full border border-primary/20 bg-primary/10 text-primary">
                   {a.campus}
                 </Badge>
+                {a.career ? (
+                  <Badge className="rounded-full border border-border bg-background text-foreground">
+                    {a.career}
+                  </Badge>
+                ) : null}
               </div>
             </div>
             <button
