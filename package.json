@@ -1,0 +1,91 @@
+{
+  "name": "snies-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema de gestión SNIES - Monorepo con Next.js y Django",
+  "workspaces": [
+    "snies-frontend"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "npm run docker:up",
+    "docker:up": "docker-compose up",
+    "docker:up:bg": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:down:volumes": "docker-compose down -v",
+    "docker:restart": "npm run docker:down && npm run docker:up",
+    "docker:build": "docker-compose build",
+    "docker:logs": "docker-compose logs -f",
+    "docker:logs:frontend": "docker-compose logs -f frontend",
+    "docker:logs:backend": "docker-compose logs -f backend",
+    "docker:logs:db": "docker-compose logs -f db",
+    "prod:deploy": "bash scripts/deploy.sh",
+    "prod:up": "docker-compose -f docker-compose.prod.yml up -d",
+    "prod:down": "docker-compose -f docker-compose.prod.yml down",
+    "prod:logs": "docker-compose -f docker-compose.prod.yml logs -f",
+    "prod:ps": "docker-compose -f docker-compose.prod.yml ps",
+    "dev:frontend": "cd snies-frontend && npm run dev",
+    "dev:backend": "cd snies-backend && python manage.py runserver",
+    "build": "npm run build:frontend",
+    "build:frontend": "cd snies-frontend && npm run build",
+    "start:frontend": "cd snies-frontend && npm start",
+    "lint": "npm run lint:frontend",
+    "lint:frontend": "cd snies-frontend && npm run lint",
+    "lint:fix": "cd snies-frontend && npm run lint -- --fix",
+    "format": "npm run format:frontend && npm run format:backend",
+    "format:frontend": "cd snies-frontend && prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:backend": "cd snies-backend && black . && isort .",
+    "type-check": "npm run type-check:frontend",
+    "type-check:frontend": "cd snies-frontend && tsc --noEmit",
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "cd snies-frontend && npm run test",
+    "test:backend": "cd snies-backend && pytest",
+    "test:watch": "cd snies-frontend && npm run test:watch",
+    "migrate": "docker-compose exec backend python manage.py migrate",
+    "makemigrations": "docker-compose exec backend python manage.py makemigrations",
+    "shell": "docker-compose exec backend python manage.py shell",
+    "dbshell": "docker-compose exec db psql -U postgres -d snies_db",
+    "createsuperuser": "docker-compose exec backend python manage.py createsuperuser",
+    "collectstatic": "docker-compose exec backend python manage.py collectstatic --noinput",
+    "clean": "npm run clean:frontend && npm run clean:backend",
+    "clean:frontend": "cd snies-frontend && rm -rf .next node_modules",
+    "clean:backend": "cd snies-backend && find . -type d -name __pycache__ -exec rm -rf {} + && find . -type f -name '*.pyc' -delete",
+    "install:all": "npm install && cd snies-frontend && npm install",
+    "update:deps": "npm run update:deps:frontend",
+    "update:deps:frontend": "cd snies-frontend && npm update",
+    "prepare": "husky || true"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^18.4.3",
+    "@commitlint/config-conventional": "^18.4.3",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.1.1",
+    "turbo": "^1.11.2"
+  },
+  "lint-staged": {
+    "snies-frontend/**/*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "snies-frontend/**/*.{json,md,css}": [
+      "prettier --write"
+    ],
+    "snies-backend/**/*.py": [
+      "black",
+      "isort"
+    ]
+  },
+  "keywords": [
+    "monorepo",
+    "nextjs",
+    "django",
+    "snies",
+    "fesc"
+  ],
+  "author": "FESC",
+  "license": "UNLICENSED"
+}

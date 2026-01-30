@@ -1,0 +1,62 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Obtener el tag anterior
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          if [ -z "$PREVIOUS_TAG" ]; then
+            # Si es el primer tag, mostrar todos los commits
+            CHANGELOG=$(git log --pretty=format:"- %s (%an)" --no-merges)
+          else
+            # Generar changelog desde el tag anterior
+            CHANGELOG=$(git log $PREVIOUS_TAG..HEAD --pretty=format:"- %s (%an)" --no-merges)
+          fi
+          
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            ## Cambios en esta versión
+            
+            ${{ steps.changelog.outputs.changelog }}
+            
+            ## Instalación
+            
+            ### Con Docker
+            ```bash
+            git clone <repo-url>
+            cd Monorepo
+            git checkout ${{ github.ref }}
+            cp .env.example .env
+            docker-compose up -d
+            ```
+            
+            ### Sin Docker
+            Consulta el [README.md](./README.md) para instrucciones detalladas.
+          draft: false
+          prerelease: false

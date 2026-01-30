@@ -10,6 +10,11 @@ COPY . .
 
 EXPOSE 3000
 
-# Next dev debe escuchar en todas las interfaces dentro del contenedor
-CMD ["npm", "run", "dev", "--", "-H", "0.0.0.0", "-p", "3000"]
+# Variables de entorno para evitar problemas
+ENV WATCHPACK_POLLING=false
+ENV CHOKIDAR_USEPOLLING=false
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Next dev simple sin flags problemáticos
+CMD ["npm", "run", "dev"]
 
