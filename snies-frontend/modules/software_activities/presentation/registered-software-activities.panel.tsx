@@ -162,84 +162,86 @@ export function RegisteredSoftwareActivitiesPanel() {
               initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
-              className="absolute -top-32 left-1/2 h-128 w-lg -translate-x-1/2 rounded-full bg-primary/12 blur-3xl"
+              className="absolute -top-32 left-1/2 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-primary/12 blur-3xl"
             />
-            <div className="absolute -bottom-40 -right-40 h-120 w-120 rounded-full bg-primary/8 blur-3xl" />
-            <div className="absolute inset-0 opacity-[0.05] bg-[radial-gradient(#111_1px,transparent_1px)] bg-size-[18px_18px]" />
+            <div className="absolute -bottom-40 -right-40 h-[30rem] w-[30rem] rounded-full bg-primary/8 blur-3xl" />
+            <div className="absolute inset-0 opacity-[0.05] bg-[radial-gradient(#111_1px,transparent_1px)]" style={{ backgroundSize: '18px 18px' }} />
           </div>
 
           <div className="container mx-auto px-4 md:px-8 lg:px-20 py-6 md:py-10 space-y-6">
             <div className="rounded-3xl border border-border bg-card p-4 md:p-5 shadow-sm">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div className="flex items-start gap-3">
-                  <div className="h-11 w-11 rounded-2xl bg-primary/10 ring-1 ring-primary/15 shadow-xs flex items-center justify-center">
-                    <ClipboardList className="h-5 w-5 text-primary" />
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <div className="h-11 w-11 shrink-0 rounded-2xl bg-primary/10 ring-1 ring-primary/15 shadow-xs flex items-center justify-center">
+                      <ClipboardList className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+                        Actividades
+                      </h1>
+                      <p className="text-sm text-muted-foreground">
+                        Registro, importación (Excel) y consulta de actividades.
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-                      Actividades
-                    </h1>
-                    <p className="text-sm text-muted-foreground">
-                      Registro, importación (Excel) y consulta de actividades.
-                    </p>
+
+                  <div className="flex gap-2 shrink-0">
+                    <Button
+                      variant="outline"
+                      className="gap-2 shrink-0"
+                      onClick={handleExport}
+                      disabled={tab !== "activities" || exporting || loading}
+                    >
+                      {exporting ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <FileSpreadsheet className="h-4 w-4" />
+                      )}
+                      Exportar Excel
+                    </Button>
+
+                    <Button
+                      className="bg-primary hover:bg-primary/90 gap-2 shrink-0"
+                      onClick={() => setOpenForm(true)}
+                      disabled={tab !== "activities"}
+                    >
+                      <Plus className="h-4 w-4" />
+                      Crear actividad
+                    </Button>
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-                  {tab === "activities" ? (
-                    <>
-                      <div className="w-full sm:w-[240px]">
-                        <Select value={careerFilter} onValueChange={(v) => setCareerFilter(v)}>
-                          <SelectTrigger className="w-full bg-background rounded-full">
-                            <SelectValue placeholder="Carrera" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">Todas las carreras</SelectItem>
-                            <SelectItem value="Ing. Software">Ing. Software</SelectItem>
-                            <SelectItem value="Diseño Gráfico">Diseño Gráfico</SelectItem>
-                            <SelectItem value="Negocios Internacionales">Negocios Internacionales</SelectItem>
-                            <SelectItem value="Diseño de Modas">Diseño de Modas</SelectItem>
-                            <SelectItem value="Administración Turística">Administración Turística</SelectItem>
-                            <SelectItem value="Administración Financiera">Administración Financiera</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="relative w-full sm:w-[320px]">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                        <Input
-                          placeholder="Buscar por nombre, sede, lugar…"
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-10 bg-background rounded-full"
-                          disabled={loading}
-                        />
-                      </div>
-                    </>
-                  ) : null}
-
-                  <Button
-                    variant="outline"
-                    className="gap-2"
-                    onClick={handleExport}
-                    disabled={tab !== "activities" || exporting || loading}
-                  >
-                    {exporting ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <FileSpreadsheet className="h-4 w-4" />
-                    )}
-                    Exportar Excel
-                  </Button>
-
-                  <Button
-                    className="bg-primary hover:bg-primary/90 gap-2"
-                    onClick={() => setOpenForm(true)}
-                    disabled={tab !== "activities"}
-                  >
-                    <Plus className="h-4 w-4" />
-                    Crear actividad
-                  </Button>
-                </div>
+                {tab === "activities" ? (
+                  <div className="flex flex-col sm:flex-row gap-2 w-full">
+                    <div className="w-full sm:w-[240px]">
+                      <Select value={careerFilter} onValueChange={(v) => setCareerFilter(v)}>
+                        <SelectTrigger className="w-full bg-background rounded-full">
+                          <SelectValue placeholder="Carrera" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todas las carreras</SelectItem>
+                          <SelectItem value="Ing. Software">Ing. Software</SelectItem>
+                          <SelectItem value="Diseño Gráfico">Diseño Gráfico</SelectItem>
+                          <SelectItem value="Negocios Internacionales">Negocios Internacionales</SelectItem>
+                          <SelectItem value="Diseño de Modas">Diseño de Modas</SelectItem>
+                          <SelectItem value="Administración Turística">Administración Turística</SelectItem>
+                          <SelectItem value="Administración Financiera">Administración Financiera</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="relative w-full sm:flex-1 sm:max-w-md">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                      <Input
+                        placeholder="Buscar por nombre, sede, lugar…"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 bg-background rounded-full"
+                        disabled={loading}
+                      />
+                    </div>
+                  </div>
+                ) : null}
               </div>
 
               <div className="mt-4">

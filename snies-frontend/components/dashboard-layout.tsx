@@ -98,8 +98,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
       </div>);
     }
-    return (<div className="min-h-screen bg-background text-foreground">
-      <header className="h-16 border-b border-border bg-white/90 dark:bg-background/80 px-4 sm:px-6 flex items-center justify-between backdrop-blur supports-backdrop-filter:bg-white/70 supports-backdrop-filter:dark:bg-background/60">
+    return (<div className="h-screen bg-background text-foreground overflow-hidden flex flex-col">
+      <header className="h-16 border-b border-border bg-white/90 dark:bg-background/80 px-4 sm:px-6 flex items-center justify-between backdrop-blur supports-backdrop-filter:bg-white/70 supports-backdrop-filter:dark:bg-background/60 flex-shrink-0">
         <div className="flex items-center gap-4 min-w-0">
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-xl bg-white ring-1 ring-border shadow-xs flex items-center justify-center overflow-hidden">
@@ -282,8 +282,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
       </header>
 
-      <div className="flex">
-        <aside className="w-64 border-r border-border bg-white dark:bg-background h-[calc(100vh-4rem)] overflow-y-auto">
+      <div className="flex flex-1 overflow-hidden">
+        <aside className="w-64 shrink-0 border-r border-border bg-white dark:bg-background overflow-y-auto">
           <div className="p-4">
             <div className="px-2 pb-3">
               <div className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
@@ -359,11 +359,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </aside>
 
-        <main className="relative flex-1 bg-linear-to-b from-background via-muted/25 to-background">
+        <main className="relative flex-1 bg-gradient-to-b from-background via-muted/25 to-background overflow-y-auto overflow-x-hidden">
           <div className="pointer-events-none absolute inset-0 -z-10">
-            <div className="absolute inset-0 opacity-[0.035] bg-[radial-gradient(#111_1px,transparent_1px)] bg-size-[18px_18px]" />
-            <div className="absolute -top-40 -right-48 h-112 w-md rounded-full bg-primary/8 blur-3xl" />
-            <div className="absolute -bottom-56 -left-56 h-136 w-136 rounded-full bg-primary/10 blur-3xl" />
+            <div className="absolute inset-0 opacity-[0.035] bg-[radial-gradient(#111_1px,transparent_1px)]" style={{ backgroundSize: '18px 18px' }} />
+            <div className="absolute -top-40 -right-48 h-[28rem] w-[28rem] rounded-full bg-primary/8 blur-3xl" />
+            <div className="absolute -bottom-56 -left-56 h-[34rem] w-[34rem] rounded-full bg-primary/10 blur-3xl" />
           </div>
           {children}
         </main>
